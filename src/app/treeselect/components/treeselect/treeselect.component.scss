@@ -1,0 +1,292 @@
+:host {
+    display: block;
+}
+
+.treeselect {
+    position: relative;
+    width: 100%;
+}
+
+.treeselect__control {
+    position: relative;
+}
+
+.treeselect__trigger {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    border: 1px solid var(--ts-border);
+    border-radius: var(--ts-radius-md);
+    background: var(--ts-surface);
+    padding: var(--ts-space-3) var(--ts-space-4);
+    padding-inline-end: 4.5rem;
+    color: var(--ts-text);
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.treeselect__trigger:hover {
+    border-color: var(--ts-border-hover);
+    background: var(--ts-surface-hover);
+}
+
+.treeselect__trigger:active {
+    background: var(--ts-surface-active);
+}
+
+.treeselect__value {
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.treeselect__trigger-icon {
+    display: inline-flex;
+    align-items: center;
+    color: var(--ts-text-secondary);
+}
+
+.treeselect__chips {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+.treeselect__chip {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    border: 1px solid var(--ts-border);
+    background: var(--ts-chip-bg);
+    color: var(--ts-chip-text);
+    padding: var(--ts-space-1) var(--ts-space-3);
+    font-size: 0.75rem;
+}
+
+.treeselect__actions {
+    position: absolute;
+    inset-inline-end: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    pointer-events: none;
+}
+
+.treeselect__icon-btn {
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    color: var(--ts-text-secondary);
+    border-radius: var(--ts-radius-sm);
+    transition: background-color 0.2s ease;
+}
+
+.treeselect__clear-btn {
+    pointer-events: auto;
+}
+
+.treeselect__toggle-icon {
+    color: var(--ts-text-secondary);
+}
+
+.treeselect__icon-btn:hover {
+    background: var(--ts-surface-hover);
+}
+
+.treeselect__panel {
+    position: absolute;
+    inset-inline: 0;
+    top: calc(100% + 0.4rem);
+    z-index: 20;
+    border: 1px solid var(--ts-border);
+    border-radius: var(--ts-radius-md);
+    background: var(--ts-surface);
+    box-shadow: var(--ts-shadow-lg);
+    padding: 0.5rem;
+    max-height: 320px;
+    overflow: auto;
+}
+
+.treeselect__panel--top {
+    top: auto;
+    bottom: calc(100% + 0.4rem);
+}
+
+.treeselect__filter {
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.treeselect__filter-icon {
+    color: var(--ts-text-secondary);
+}
+
+.treeselect__filter input {
+    width: 100%;
+    border: 1px solid var(--ts-border);
+    border-radius: var(--ts-radius-sm);
+    padding: 0.45rem 0.55rem;
+    color: var(--ts-text);
+    background: var(--ts-surface);
+}
+
+.treeselect__loading {
+    border: 1px dashed var(--ts-border);
+    border-radius: var(--ts-radius-sm);
+    padding: 0.4rem 0.6rem;
+    font-size: 0.875rem;
+    color: var(--ts-text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.treeselect__loading[data-loading-mode='mask'] {
+    background: color-mix(in srgb, var(--ts-primary) 8%, transparent);
+}
+
+.treeselect__slot {
+    padding: 0.2rem 0.1rem;
+}
+
+.treeselect__slot--header {
+    margin-bottom: 0.35rem;
+}
+
+.treeselect__slot--footer {
+    margin-top: 0.35rem;
+}
+
+.treeselect__empty {
+    padding: 0.5rem;
+    border: 1px dashed var(--ts-border);
+    border-radius: var(--ts-radius-sm);
+    color: var(--ts-text-secondary);
+    text-align: center;
+}
+
+.treeselect__tree,
+.treeselect__tree ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.treeselect__virtual-viewport {
+    max-height: 320px;
+    overflow: auto;
+}
+
+.treeselect__virtual-spacer {
+    position: relative;
+}
+
+.treeselect__tree--virtual {
+    position: absolute;
+    inset: 0 0 auto 0;
+}
+
+.treeselect__node {
+    margin: 0.1rem 0;
+}
+
+.treeselect__node-content {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    border-radius: var(--ts-radius-sm);
+    transition: background-color 0.2s ease;
+}
+
+.treeselect__node-content.is-selected {
+    background: var(--ts-selected-bg);
+}
+
+.treeselect__spacer {
+    display: inline-block;
+    width: 1.25rem;
+}
+
+.treeselect__node-label {
+    border: 0;
+    background: transparent;
+    text-align: left;
+    width: 100%;
+    padding: 0.3rem 0.4rem;
+    cursor: pointer;
+    color: var(--ts-text);
+    border-radius: var(--ts-radius-sm);
+}
+
+.treeselect__node-error {
+    font-size: 0.75rem;
+    color: var(--ts-danger);
+    padding-inline-end: 0.35rem;
+}
+
+.treeselect__node-label:hover:not(:disabled) {
+    background: var(--ts-surface-hover);
+}
+
+.treeselect__checkbox {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 0.2rem;
+    border: 1px solid var(--ts-border);
+    display: inline-grid;
+    place-items: center;
+    font-size: 0.75rem;
+    color: transparent;
+}
+
+.treeselect__checkbox-btn {
+    border: 0;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    display: inline-grid;
+    place-items: center;
+    cursor: pointer;
+    border-radius: 0.2rem;
+}
+
+.treeselect__checkbox-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.treeselect__checkbox.is-checked,
+.treeselect__checkbox.is-partial {
+    background: var(--ts-primary);
+    border-color: var(--ts-primary);
+    color: var(--ts-primary-contrast);
+}
+
+.treeselect__node-label:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.treeselect__node-label:focus-visible,
+.treeselect__trigger:focus-visible,
+.treeselect__filter input:focus-visible {
+    outline: 2px solid var(--ts-focus);
+    outline-offset: 2px;
+}
+
+.treeselect--disabled {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.treeselect--invalid .treeselect__trigger {
+    border-color: var(--ts-danger);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--ts-danger) 20%, transparent);
+}

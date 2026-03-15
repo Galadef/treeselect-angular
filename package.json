@@ -1,0 +1,77 @@
+{
+  "name": "treeselect-angular",
+  "version": "0.0.0",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test --watch=false --browsers=ChromeHeadless --code-coverage",
+    "test:coverage": "ng test --watch=false --browsers=ChromeHeadless --code-coverage",
+    "lint": "ng lint",
+    "e2e": "PW_SLOWMO=250 playwright test --headed --workers=1 --reporter=list",
+    "pree2e:ui": "playwright install chromium",
+    "e2e:ui": "playwright test --ui",
+    "e2e:ui:slow": "PW_SLOWMO=250 playwright test --ui --workers=1",
+    "e2e:headed": "playwright test --headed --workers=1",
+    "e2e:headed:single": "playwright test --headed --workers=1 --reporter=list",
+    "e2e:headed:slow": "PW_SLOWMO=250 playwright test --headed --workers=1 --reporter=list",
+    "e2e:debug": "PWDEBUG=1 playwright test --headed --workers=1",
+    "e2e:visual:auto": "playwright test --workers=1",
+    "e2e:snapshots:update": "playwright test --update-snapshots",
+    "test:log": "mkdir -p .tmp/test-results && npm run test -- --watch=false --browsers=ChromeHeadless > .tmp/test-results/unit.log 2>&1",
+    "e2e:log": "mkdir -p .tmp/test-results && npx playwright test e2e/treeselect.spec.ts > .tmp/test-results/e2e.log 2>&1",
+    "verify:log": "mkdir -p .tmp/test-results && npm run test -- --watch=false --browsers=ChromeHeadless > .tmp/test-results/unit.log 2>&1; echo unit_exit=$? > .tmp/test-results/status.txt; npx playwright test e2e/treeselect.spec.ts > .tmp/test-results/e2e.log 2>&1; echo e2e_exit=$? >> .tmp/test-results/status.txt",
+    "benchmark": "node scripts/benchmark-treeselect.mjs",
+    "verify": "npm run lint && npm run test:coverage && npm run build && npm run e2e",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "husky",
+    "commitlint": "commitlint --from=HEAD~1 --to=HEAD"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "private": true,
+  "lint-staged": {
+    "*.{ts,html,scss,css,md,json,yml,yaml}": [
+      "prettier --write"
+    ]
+  },
+  "dependencies": {
+    "@angular/animations": "^19.0.0",
+    "@angular/common": "^19.0.0",
+    "@angular/compiler": "^19.0.0",
+    "@angular/core": "^19.0.0",
+    "@angular/forms": "^19.0.0",
+    "@angular/platform-browser": "^19.0.0",
+    "@angular/platform-browser-dynamic": "^19.0.0",
+    "@angular/router": "^19.0.0",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0",
+    "zone.js": "~0.15.0"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "^19.0.7",
+    "@angular/cli": "^19.0.7",
+    "@angular/compiler-cli": "^19.0.0",
+    "@commitlint/cli": "^20.4.4",
+    "@commitlint/config-conventional": "^20.4.4",
+    "@playwright/test": "^1.58.2",
+    "@types/jasmine": "~5.1.0",
+    "angular-eslint": "21.0.1",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
+    "jasmine-core": "~5.4.0",
+    "karma": "~6.4.0",
+    "karma-chrome-launcher": "~3.2.0",
+    "karma-coverage": "~2.2.0",
+    "karma-jasmine": "~5.1.0",
+    "karma-jasmine-html-reporter": "~2.1.0",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.8.1",
+    "typescript": "~5.6.2",
+    "typescript-eslint": "8.46.4"
+  }
+}

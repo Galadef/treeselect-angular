@@ -1,0 +1,237 @@
+<div class="treeselect" [class.treeselect--disabled]="isDisabled()" [class.treeselect--invalid]="isInvalid()"
+    [ngClass]="rootClass()" [ngStyle]="rootStyle()">
+    <div class="treeselect__control">
+        <button #triggerButton class="treeselect__trigger" type="button" [id]="inputId()" [tabIndex]="tabindex()"
+            [disabled]="isDisabled()" [attr.role]="'combobox'" [attr.aria-expanded]="state.isOpen()"
+            [attr.aria-controls]="treeId" [attr.aria-label]="ariaLabel()" [attr.aria-labelledby]="ariaLabelledBy()"
+            [attr.aria-haspopup]="'tree'" (click)="togglePanel()" (keydown)="onTriggerKeydown($event)"
+            (blur)="markAsTouched()">
+            @if (triggerIconTemplate()) {
+            <span class="treeselect__trigger-icon">
+                <ng-container *ngTemplateOutlet="triggerIconTemplate()!"></ng-container>
+            </span>
+            }
+
+            <span class="treeselect__value" [ngClass]="labelClass()" [ngStyle]="labelStyle()">
+                @if (valueTemplate()) {
+                <ng-container *ngTemplateOutlet="valueTemplate()!; context: valueTemplateContext()"></ng-container>
+                } @else if (display() === 'chip' && selectedLabels().length > 0) {
+                <span class="treeselect__chips">
+                    @for (label of selectedLabels(); track label) {
+                    <span class="treeselect__chip">{{ label }}</span>
+                    }
+                </span>
+                } @else {
+                {{ selectedValueText() }}
+                }
+            </span>
+        </button>
+
+        <span class="treeselect__actions">
+            @if (showClear() && hasValue()) {
+            <button class="treeselect__icon-btn treeselect__clear-btn" type="button" aria-label="Limpiar"
+                [disabled]="isDisabled()" (click)="clear($event)">
+                @if (clearIconTemplate()) {
+                <ng-container *ngTemplateOutlet="clearIconTemplate()!"></ng-container>
+                } @else if (closeIconTemplate()) {
+                <ng-container *ngTemplateOutlet="closeIconTemplate()!"></ng-container>
+                } @else {
+                ✕
+                }
+            </button>
+            }
+            <span class="treeselect__toggle-icon" aria-hidden="true">
+                @if (togglerIconTemplate()) {
+                <ng-container *ngTemplateOutlet="togglerIconTemplate()!"></ng-container>
+                } @else {
+                ▾
+                }
+            </span>
+        </span>
+    </div>
+
+    @if (state.isOpen()) {
+    <section #panelElement class="treeselect__panel" [ngClass]="panelClass()"
+        [class.treeselect__panel--top]="panelOpenUpwards()" [ngStyle]="panelStyle()" [id]="popupId" role="presentation"
+        (keydown)="onPanelKeydown($event)">
+        @if (headerTemplate()) {
+        <div class="treeselect__slot treeselect__slot--header">
+            <ng-container *ngTemplateOutlet="headerTemplate()!"></ng-container>
+        </div>
+        }
+
+        @if (loading()) {
+        <div class="treeselect__loading" [attr.data-loading-mode]="loadingMode()">
+            @if (loadingIconTemplate()) {
+            <ng-container *ngTemplateOutlet="loadingIconTemplate()!"></ng-container>
+            } @else {
+            Cargando…
+            }
+        </div>
+        }
+
+        @if (filter()) {
+        <div class="treeselect__filter">
+            @if (filterIconTemplate()) {
+            <span class="treeselect__filter-icon">
+                <ng-container *ngTemplateOutlet="filterIconTemplate()!"></ng-container>
+            </span>
+            }
+            <input #filterInput type="text" [placeholder]="filterPlaceholder()" [value]="state.filterText()"
+                (input)="onFilterInput($event)" />
+        </div>
+        }
+
+        @if (filteredNodes().length === 0) {
+        @if (emptyTemplate()) {
+        <ng-container *ngTemplateOutlet="emptyTemplate()!; context: emptyTemplateContext()"></ng-container>
+        } @else {
+        <div class="treeselect__empty">Sin resultados</div>
+        }
+        } @else {
+        @if (virtualScroll()) {
+        <div #virtualViewport class="treeselect__virtual-viewport" (scroll)="onVirtualScroll($event)">
+            <div class="treeselect__virtual-spacer" [style.height.px]="virtualTotalHeight()">
+                <ul class="treeselect__tree treeselect__tree--virtual" [id]="treeId" role="tree"
+                    aria-label="Opciones TreeSelect" [style.transform]="'translateY(' + virtualOffset() + 'px)'">
+                    @for (row of virtualVisibleNodes(); track trackByNodeKey($index, row.node)) {
+                    <li class="treeselect__node" role="treeitem"
+                        [attr.aria-selected]="selectionMode() !== 'checkbox' ? isSelected(row.node) : null"
+                        [attr.aria-checked]="selectionMode() === 'checkbox' ? (isPartiallySelected(row.node) ? 'mixed' : isSelected(row.node)) : null"
+                        [attr.aria-expanded]="row.node.children?.length ? isNodeExpanded(row.node) : null"
+                        [attr.aria-level]="row.level"
+                        [attr.aria-disabled]="row.node.disabled || row.node.selectable === false"
+                        [style.padding-inline-start.rem]="(row.level - 1) * 0.9"
+                        [style.height.px]="virtualScrollItemSize()">
+                        <div class="treeselect__node-content" [class.is-selected]="isSelected(row.node)">
+                            @if (row.node.children?.length || (lazy() && row.node.leaf !== true)) {
+                            <button class="treeselect__icon-btn" type="button"
+                                [attr.aria-label]="isNodeExpanded(row.node) ? 'Colapsar' : 'Expandir'"
+                                (click)="toggleNodeExpansion($event, row.node)">
+                                @if (row.node.key && loadingKeys().has(row.node.key)) {
+                                …
+                                } @else {
+                                {{ isNodeExpanded(row.node) ? '▾' : '▸' }}
+                                }
+                            </button>
+                            } @else {
+                            <span class="treeselect__spacer"></span>
+                            }
+
+                            @if (shouldRenderCheckbox(row.level)) {
+                            <button class="treeselect__checkbox-btn" type="button"
+                                [attr.aria-label]="(isSelected(row.node) || isPartiallySelected(row.node) ? 'Deseleccionar ' : 'Seleccionar ') + row.node.label"
+                                [disabled]="isDisabled() || row.node.disabled || row.node.selectable === false"
+                                (click)="selectNode($event, row.node)">
+                                <span class="treeselect__checkbox" [class.is-checked]="isSelected(row.node)"
+                                    [class.is-partial]="isPartiallySelected(row.node)">
+                                    @if (checkboxIconTemplate()) {
+                                    <ng-container
+                                        *ngTemplateOutlet="checkboxIconTemplate()!; context: nodeTemplateContext(row.node)"></ng-container>
+                                    } @else {
+                                    @if (isPartiallySelected(row.node)) {
+                                    −
+                                    } @else if (isSelected(row.node)) {
+                                    ✓
+                                    }
+                                    }
+                                </span>
+                            </button>
+                            }
+
+                            <button class="treeselect__node-label" type="button" [attr.data-node-key]="row.node.key"
+                                [disabled]="row.node.disabled || row.node.selectable === false"
+                                (click)="selectNode($event, row.node)">
+                                {{ row.node.label }}
+                            </button>
+
+                            @if (lazyLoadErrorMessage(row.node)) {
+                            <span class="treeselect__node-error" role="status">{{ lazyLoadErrorMessage(row.node)
+                                }}</span>
+                            }
+                        </div>
+                    </li>
+                    }
+                </ul>
+            </div>
+        </div>
+        } @else {
+        <ul class="treeselect__tree" [id]="treeId" role="tree" aria-label="Opciones TreeSelect">
+            <ng-container
+                *ngTemplateOutlet="nodeTemplate; context: { $implicit: filteredNodes(), level: 1 }"></ng-container>
+        </ul>
+        }
+        }
+
+        <ng-template #nodeTemplate let-nodes let-level="level">
+            @for (node of nodes; track trackByNodeKey($index, node)) {
+            <li class="treeselect__node" role="treeitem"
+                [attr.aria-selected]="selectionMode() !== 'checkbox' ? isSelected(node) : null"
+                [attr.aria-checked]="selectionMode() === 'checkbox' ? (isPartiallySelected(node) ? 'mixed' : isSelected(node)) : null"
+                [attr.aria-expanded]="node.children?.length ? isNodeExpanded(node) : null" [attr.aria-level]="level"
+                [attr.aria-disabled]="node.disabled || node.selectable === false"
+                [style.padding-inline-start.rem]="(level - 1) * 0.9">
+                <div class="treeselect__node-content" [class.is-selected]="isSelected(node)">
+                    @if (node.children?.length || (lazy() && node.leaf !== true)) {
+                    <button class="treeselect__icon-btn" type="button"
+                        [attr.aria-label]="isNodeExpanded(node) ? 'Colapsar' : 'Expandir'"
+                        (click)="toggleNodeExpansion($event, node)">
+                        @if (node.key && loadingKeys().has(node.key)) {
+                        …
+                        } @else {
+                        {{ isNodeExpanded(node) ? '▾' : '▸' }}
+                        }
+                    </button>
+                    } @else {
+                    <span class="treeselect__spacer"></span>
+                    }
+
+                    @if (shouldRenderCheckbox(level)) {
+                    <button class="treeselect__checkbox-btn" type="button"
+                        [attr.aria-label]="(isSelected(node) || isPartiallySelected(node) ? 'Deseleccionar ' : 'Seleccionar ') + node.label"
+                        [disabled]="isDisabled() || node.disabled || node.selectable === false"
+                        (click)="selectNode($event, node)">
+                        <span class="treeselect__checkbox" [class.is-checked]="isSelected(node)"
+                            [class.is-partial]="isPartiallySelected(node)">
+                            @if (checkboxIconTemplate()) {
+                            <ng-container
+                                *ngTemplateOutlet="checkboxIconTemplate()!; context: nodeTemplateContext(node)"></ng-container>
+                            } @else {
+                            @if (isPartiallySelected(node)) {
+                            −
+                            } @else if (isSelected(node)) {
+                            ✓
+                            }
+                            }
+                        </span>
+                    </button>
+                    }
+
+                    <button class="treeselect__node-label" type="button" [attr.data-node-key]="node.key"
+                        [disabled]="node.disabled || node.selectable === false" (click)="selectNode($event, node)">
+                        {{ node.label }}
+                    </button>
+
+                    @if (lazyLoadErrorMessage(node)) {
+                    <span class="treeselect__node-error" role="status">{{ lazyLoadErrorMessage(node) }}</span>
+                    }
+                </div>
+            </li>
+
+            @if (node.children?.length && isNodeExpanded(node)) {
+            <ul role="group">
+                <ng-container
+                    *ngTemplateOutlet="nodeTemplate; context: { $implicit: node.children, level: level + 1 }"></ng-container>
+            </ul>
+            }
+            }
+        </ng-template>
+
+        @if (footerTemplate()) {
+        <div class="treeselect__slot treeselect__slot--footer">
+            <ng-container *ngTemplateOutlet="footerTemplate()!"></ng-container>
+        </div>
+        }
+    </section>
+    }
+</div>

@@ -1,0 +1,133 @@
+<main class="page">
+  <section class="card">
+    <h1>TreeSelect Angular 19</h1>
+    <p>
+      Setup inicial del componente propio sin PrimeNG, con API base y ejemplos
+      por modo de selección.
+    </p>
+
+    @if (treeselectFeatureEnabled()) {
+    <div class="demo-grid">
+      <section>
+        <h2>Single</h2>
+        <app-treeselect [options]="options" selectionMode="single" [placeholder]="'Selecciona un nodo'"
+          [showClear]="true" [filter]="true" [value]="selectedKey()" (valueChange)="onSelectionChange($event)"
+          (panelShown)="onTreeselectShow('single')" (panelHidden)="onTreeselectHide('single')"
+          (cleared)="onTreeselectClear('single')" />
+        <p class="selection">Valor: {{ selectedKey() || 'sin selección' }}</p>
+      </section>
+
+      <section>
+        <h2>Multiple</h2>
+        <app-treeselect [options]="options" selectionMode="multiple" display="chip"
+          [placeholder]="'Selecciona uno o más nodos'" [showClear]="true" [filter]="true" [metaKeySelection]="false"
+          [value]="selectedKeys()" (valueChange)="onMultipleSelectionChange($event)"
+          (panelShown)="onTreeselectShow('multiple')" (panelHidden)="onTreeselectHide('multiple')"
+          (cleared)="onTreeselectClear('multiple')" />
+        <p class="selection">Valor: {{ selectedKeys().join(', ') || 'sin selección' }}</p>
+      </section>
+
+      <section>
+        <h2>Checkbox</h2>
+        <app-treeselect [options]="options" selectionMode="checkbox" display="comma" [placeholder]="'Marca nodos'"
+          [showClear]="true" [filter]="true" [checkboxSelectionStartLevel]="2" [value]="checkedNodes()"
+          (valueChange)="onCheckboxSelectionChange($event)" (panelShown)="onTreeselectShow('checkbox')"
+          (panelHidden)="onTreeselectHide('checkbox')" (cleared)="onTreeselectClear('checkbox')" />
+        <p class="selection">Nodos activos: {{ checkedNodeCount() }}</p>
+        <p class="selection">
+          Cada valor muestra un checkbox a la izquierda y puedes seleccionar/desseleccionar haciendo clic.
+          En este ejemplo, los checkbox comienzan desde el nivel 2.
+        </p>
+      </section>
+
+      <section>
+        <h2>Checkbox profundo (nivel 1 a 4)</h2>
+        <app-treeselect [options]="checkboxDeepOptions" selectionMode="checkbox" display="comma"
+          [placeholder]="'Selecciona nodos de varios niveles'" [showClear]="true" [filter]="true"
+          [checkboxSelectionStartLevel]="1" [value]="deepCheckedNodes()"
+          (valueChange)="onDeepCheckboxSelectionChange($event)" (panelShown)="onTreeselectShow('checkboxDeep')"
+          (panelHidden)="onTreeselectHide('checkboxDeep')" (cleared)="onTreeselectClear('checkboxDeep')" />
+        <p class="selection">Nodos activos (profundo): {{ deepCheckedNodeCount() }}</p>
+        <p class="selection">
+          Incluye ramas con un solo hijo y otras con varios hijos, llegando hasta cuarto nivel.
+        </p>
+      </section>
+
+      <section>
+        <h2>Reactive Forms (required)</h2>
+        <form [formGroup]="reactiveForm">
+          <app-treeselect [options]="options" formControlName="tree" [placeholder]="'Campo requerido'"
+            [showClear]="true" (panelShown)="onTreeselectShow('reactive')" (panelHidden)="onTreeselectHide('reactive')"
+            (cleared)="onTreeselectClear('reactive')" />
+        </form>
+        <p class="selection" [class.selection--error]="reactiveInvalid">
+          Estado: {{ reactiveForm.controls.tree.value || 'vacío' }}
+        </p>
+        <button type="button" class="demo-btn" (click)="markReactiveTouched()">Marcar touched</button>
+      </section>
+
+      <section>
+        <h2>ngModel</h2>
+        <app-treeselect [options]="options" name="treeModel" [(ngModel)]="ngModelValue"
+          [placeholder]="'Binding con ngModel'" [showClear]="true" (panelShown)="onTreeselectShow('ngModel')"
+          (panelHidden)="onTreeselectHide('ngModel')" (cleared)="onTreeselectClear('ngModel')" />
+        <p class="selection">Modelo: {{ ngModelValue || 'vacío' }}</p>
+      </section>
+
+      <section>
+        <h2>Templates custom</h2>
+        <app-treeselect [options]="options" [filter]="true" [showClear]="true" [headerTemplate]="headerTpl"
+          [footerTemplate]="footerTpl" [emptyTemplate]="emptyTpl" [valueTemplate]="valueTpl"
+          [filterIconTemplate]="filterIconTpl" [togglerIconTemplate]="togglerIconTpl"
+          (panelShown)="onTreeselectShow('templates')" (panelHidden)="onTreeselectHide('templates')"
+          (cleared)="onTreeselectClear('templates')" />
+
+        <ng-template #headerTpl>
+          <strong>Selecciona archivos</strong>
+        </ng-template>
+
+        <ng-template #footerTpl>
+          <small>Total nodos: {{ options.length }}</small>
+        </ng-template>
+
+        <ng-template #emptyTpl let-query="query">
+          <em>Sin resultados para "{{ query }}"</em>
+        </ng-template>
+
+        <ng-template #valueTpl let-selectedLabels="selectedLabels" let-selectedValueText="selectedValueText">
+          {{ selectedLabels.length > 0 ? selectedValueText : 'Personaliza tu selección' }}
+        </ng-template>
+
+        <ng-template #filterIconTpl>🔎</ng-template>
+        <ng-template #togglerIconTpl>⌄</ng-template>
+      </section>
+
+      <section>
+        <h2>Virtual scroll (2k nodos)</h2>
+        <app-treeselect [options]="virtualOptions" selectionMode="single" [virtualScroll]="true"
+          [virtualScrollItemSize]="36" [filter]="true" [showClear]="true" [value]="virtualValue()"
+          [placeholder]="'Selecciona en dataset grande'" (valueChange)="onVirtualSelectionChange($event)"
+          (panelShown)="onTreeselectShow('virtual')" (panelHidden)="onTreeselectHide('virtual')"
+          (cleared)="onTreeselectClear('virtual')" />
+        <p class="selection">Valor virtual: {{ virtualValue() || 'sin selección' }}</p>
+      </section>
+
+      <section>
+        <h2>Lazy loading</h2>
+        <app-treeselect [options]="lazyOptions" selectionMode="single" [lazy]="true" [loadChildren]="loadLazyChildren"
+          [showClear]="true" [value]="lazyValue()" [placeholder]="'Expande para cargar hijos'"
+          (valueChange)="onLazySelectionChange($event)" (panelShown)="onTreeselectShow('lazy')"
+          (panelHidden)="onTreeselectHide('lazy')" (cleared)="onTreeselectClear('lazy')" />
+        <p class="selection">Valor lazy: {{ lazyValue() || 'sin selección' }}</p>
+      </section>
+    </div>
+    } @else {
+    <section>
+      <h2>Feature flag desactivada</h2>
+      <p>
+        El despliegue gradual del TreeSelect está deshabilitado para este seed.
+      </p>
+    </section>
+    }
+  </section>
+</main>
