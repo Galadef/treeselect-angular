@@ -1,0 +1,41 @@
+# Dependencias
+node_modules/
+
+# Build de Angular
+dist/
+docs/
+
+# Caché del Angular CLI
+.angular/
+
+# Cobertura de tests
+coverage/
+
+# Playwright
+playwright-report/
+test-results/
+/test-results/
+
+# IDEs y editores
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Archivos temporales
+*.log
+npm-debug.log*
+*.tmp
+terminal_probe_2.txt
+
+# Variables de entorno locales
+.env
+.env.local
+.env.*.local
