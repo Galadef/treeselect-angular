@@ -1,10 +1,14 @@
 import {
+    AfterContentInit,
     ChangeDetectionStrategy,
     Component,
+    ContentChildren,
     computed,
     ElementRef,
     effect,
+    EventEmitter,
     HostListener,
+    Output,
     input,
     output,
     signal,
@@ -13,12 +17,14 @@ import {
     inject,
     isDevMode,
     OnDestroy,
+    QueryList,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NgControl } from '@angular/forms';
 import {
     TreeselectDisplayMode,
     TreeselectCheckboxSelection,
+    TreeselectMultipleSelection,
     TreeselectSelectionMode,
     TreeselectValue,
 } from '../../models/treeselect-selection.model';
@@ -42,6 +48,7 @@ import {
     normalizeTreeNodes,
 } from '../../utils/tree-node.utils';
 import { TreeselectStateService } from '../../services/treeselect-state.service';
+import { TreeselectPrimeTemplateDirective } from './treeselect-prime-template.directive';
 
 let nextTreeselectInstanceId = 0;
 
@@ -54,7 +61,7 @@ let nextTreeselectInstanceId = 0;
     providers: [TreeselectStateService],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TreeselectComponent implements ControlValueAccessor, OnDestroy {
+export class TreeselectComponent implements AfterContentInit, ControlValueAccessor, OnDestroy {
     private readonly host = inject(ElementRef<HTMLElement>);
     private readonly ngControl = inject(NgControl, { self: true, optional: true });
 
@@ -67,19 +74,23 @@ export class TreeselectComponent implements ControlValueAccessor, OnDestroy {
     readonly options = input<TreeNode[]>([]);
     readonly selectionMode = input<TreeselectSelectionMode>('single');
     readonly display = input<TreeselectDisplayMode>('comma');
-    readonly metaKeySelection = input(true);
+    readonly metaKeySelection = input(false);
     readonly placeholder = input('Selecciona');
     readonly showClear = input(false);
+    readonly variant = input<'filled' | 'outlined'>('outlined');
 
     readonly filter = input(false);
     readonly filterBy = input('label');
     readonly filterMode = input<'lenient' | 'strict'>('lenient');
     readonly filterPlaceholder = input('Buscar');
-    readonly filterInputAutoFocus = input(false);
-    readonly resetFilterOnHide = input(false);
+    readonly filterInputAutoFocus = input(true);
+    readonly resetFilterOnHide = input(true);
+    readonly filterLocale = input<string | undefined>(undefined);
 
     readonly virtualScroll = input(false);
     readonly virtualScrollItemSize = input(36);
+    readonly virtualScrollOptions = input<{ scrollHeight?: string } | null>(null);
+    readonly scrollHeight = input('400px');
     readonly lazy = input(false);
     readonly loadChildren = input<((node: TreeNode) => Promise<TreeNode[]>) | null>(null);
 
@@ -95,6 +106,7 @@ export class TreeselectComponent implements ControlValueAccessor, OnDestroy {
     readonly inputId = input<string | null>(null);
     readonly ariaLabel = input<string | null>(null);
     readonly ariaLabelledBy = input<string | null>(null);
+    readonly autofocus = input(false);
 
     readonly rootClass = input('');
     readonly panelClass = input('');
@@ -103,6 +115,13 @@ export class TreeselectComponent implements ControlValueAccessor, OnDestroy {
     readonly rootStyle = input<Record<string, string> | null>(null);
     readonly panelStyle = input<Record<string, string> | null>(null);
     readonly labelStyle = input<Record<string, string> | null>(null);
+    readonly emptyMessage = input('Sin resultados');
+
+    // Compat no-op inputs to keep PrimeNG templates compiling without changes.
+    readonly appendTo = input<unknown>(null);
+    readonly overlayOptions = input<unknown>(null);
+    readonly showTransitionOptions = input<string | undefined>(undefined);
+    readonly hideTransitionOptions = input<string | undefined>(undefined);
 
     readonly valueTemplate = input<TemplateRef<TreeselectValueTemplateContext> | null>(null);
     readonly headerTemplate = input<TemplateRef<undefined> | null>(null);
@@ -116,8 +135,20 @@ export class TreeselectComponent implements ControlValueAccessor, OnDestroy {
     readonly loadingIconTemplate = input<TemplateRef<undefined> | null>(null);
     readonly filterIconTemplate = input<TemplateRef<undefined> | null>(null);
     readonly closeIconTemplate = input<TemplateRef<undefined> | null>(null);
+    readonly itemTogglerIconTemplate = input<TemplateRef<unknown> | null>(null);
+    readonly itemCheckboxIconTemplate = input<TemplateRef<TreeselectNodeTemplateContext> | null>(null);
+    readonly itemLoadingIconTemplate = input<TemplateRef<unknown> | null>(null);
 
     readonly value = input<TreeselectValue>(null);
+
+    // eslint-disable-next-line @angular-eslint/no-input-rename
+    readonly containerStyleClassCompat = input('', { alias: 'containerStyleClass' });
+    // eslint-disable-next-line @angular-eslint/no-input-rename
+    readonly panelStyleClassCompat = input('', { alias: 'panelStyleClass' });
+    // eslint-disable-next-line @angular-eslint/no-input-rename
+    readonly labelStyleClassCompat = input('', { alias: 'labelStyleClass' });
+    // eslint-disable-next-line @angular-eslint/no-input-rename
+    readonly containerStyleCompat = input<Record<string, string> | null>(null, { alias: 'containerStyle' });
 
     readonly valueChange = output<TreeselectValue>();
     readonly nodeSelect = output<TreeselectNodeEvent>();
@@ -129,6 +160,26 @@ export class TreeselectComponent implements ControlValueAccessor, OnDestroy {
     readonly panelHidden = output<void>();
     readonly cleared = output<void>();
     readonly lazyLoadError = output<TreeselectLazyLoadErrorEvent>();
+
+    // eslint-disable-next-line @angular-eslint/no-output-rename, @angular-eslint/no-output-on-prefix
+    @Output('onNodeSelect') readonly onNodeSelect = new EventEmitter<TreeselectNodeEvent>();
+    // eslint-disable-next-line @angular-eslint/no-output-rename, @angular-eslint/no-output-on-prefix
+    @Output('onNodeUnselect') readonly onNodeUnselect = new EventEmitter<TreeselectNodeEvent>();
+    // eslint-disable-next-line @angular-eslint/no-output-rename, @angular-eslint/no-output-on-prefix
+    @Output('onNodeExpand') readonly onNodeExpand = new EventEmitter<TreeselectNodeEvent>();
+    // eslint-disable-next-line @angular-eslint/no-output-rename, @angular-eslint/no-output-on-prefix
+    @Output('onNodeCollapse') readonly onNodeCollapse = new EventEmitter<TreeselectNodeEvent>();
+    // eslint-disable-next-line @angular-eslint/no-output-rename, @angular-eslint/no-output-on-prefix
+    @Output('onFilter') readonly onFilter = new EventEmitter<unknown>();
+    // eslint-disable-next-line @angular-eslint/no-output-rename, @angular-eslint/no-output-on-prefix
+    @Output('onShow') readonly onShow = new EventEmitter<void>();
+    // eslint-disable-next-line @angular-eslint/no-output-rename, @angular-eslint/no-output-on-prefix
+    @Output('onHide') readonly onHide = new EventEmitter<void>();
+    // eslint-disable-next-line @angular-eslint/no-output-rename, @angular-eslint/no-output-on-prefix
+    @Output('onClear') readonly onClear = new EventEmitter<void>();
+
+    @ContentChildren(TreeselectPrimeTemplateDirective)
+    projectedTemplates?: QueryList<TreeselectPrimeTemplateDirective>;
 
     readonly state = inject(TreeselectStateService);
     readonly triggerButtonRef = viewChild<ElementRef<HTMLButtonElement>>('triggerButton');
@@ -146,6 +197,37 @@ export class TreeselectComponent implements ControlValueAccessor, OnDestroy {
         return normalizeTreeNodes(mergedOptions);
     });
     readonly isDisabled = computed(() => this.cvaDisabled() ?? this.disabled());
+    readonly mergedRootClass = computed(() => this.joinClassValues(this.rootClass(), this.containerStyleClassCompat()));
+    readonly mergedPanelClass = computed(() => this.joinClassValues(this.panelClass(), this.panelStyleClassCompat()));
+    readonly mergedLabelClass = computed(() => this.joinClassValues(this.labelClass(), this.labelStyleClassCompat()));
+    readonly mergedRootStyle = computed(() => this.mergeStyles(this.rootStyle(), this.containerStyleCompat()));
+    readonly panelScrollHeight = computed(() => this.virtualScrollOptions()?.scrollHeight ?? this.scrollHeight());
+    readonly isFilledVariant = computed(() => this.variant() === 'filled');
+    readonly resolvedValueTemplate = computed(() => this.valueTemplate() ?? this.templateByType()['value'] ?? null);
+    readonly resolvedHeaderTemplate = computed(() => this.headerTemplate() ?? this.templateByType()['header'] ?? null);
+    readonly resolvedFooterTemplate = computed(() => this.footerTemplate() ?? this.templateByType()['footer'] ?? null);
+    readonly resolvedEmptyTemplate = computed(() => this.emptyTemplate() ?? this.templateByType()['empty'] ?? null);
+    readonly resolvedClearIconTemplate = computed(
+        () => this.clearIconTemplate() ?? this.templateByType()['clearicon'] ?? null,
+    );
+    readonly resolvedFilterIconTemplate = computed(
+        () => this.filterIconTemplate() ?? this.templateByType()['filtericon'] ?? null,
+    );
+    readonly resolvedCloseIconTemplate = computed(
+        () => this.closeIconTemplate() ?? this.templateByType()['closeicon'] ?? null,
+    );
+    readonly resolvedPanelTriggerIconTemplate = computed(
+        () => this.togglerIconTemplate() ?? this.templateByType()['triggericon'] ?? null,
+    );
+    readonly resolvedItemTogglerIconTemplate = computed(
+        () => this.itemTogglerIconTemplate() ?? this.templateByType()['itemtogglericon'] ?? null,
+    );
+    readonly resolvedItemCheckboxIconTemplate = computed(
+        () => this.itemCheckboxIconTemplate() ?? this.checkboxIconTemplate() ?? this.templateByType()['itemcheckboxicon'] ?? null,
+    );
+    readonly resolvedItemLoadingIconTemplate = computed(
+        () => this.itemLoadingIconTemplate() ?? this.loadingIconTemplate() ?? this.templateByType()['itemloadingicon'] ?? null,
+    );
     readonly selectedKeys = computed(() => this.getSelectedKeys());
     readonly panelId = `treeselect-${++nextTreeselectInstanceId}`;
     readonly treeId = `${this.panelId}-tree`;
@@ -222,6 +304,7 @@ export class TreeselectComponent implements ControlValueAccessor, OnDestroy {
     private readonly internalValue = signal<TreeselectValue>(null);
     private readonly cvaDisabled = signal<boolean | null>(null);
     private readonly duplicateKeyWarningShown = signal(false);
+    private readonly templateByType = signal<Record<string, TemplateRef<unknown>>>({});
     private alignFrameId: number | null = null;
     private onCvaChange: (value: TreeselectValue) => void = () => undefined;
     private onCvaTouched: () => void = () => undefined;
@@ -263,6 +346,14 @@ export class TreeselectComponent implements ControlValueAccessor, OnDestroy {
         this.applyValue(value, false);
     }
 
+    ngAfterContentInit(): void {
+        this.refreshProjectedTemplateMap();
+
+        this.projectedTemplates?.changes.subscribe(() => {
+            this.refreshProjectedTemplateMap();
+        });
+    }
+
     ngOnDestroy(): void {
         this.cancelScheduledAlign();
     }
@@ -288,6 +379,7 @@ export class TreeselectComponent implements ControlValueAccessor, OnDestroy {
 
         if (this.state.isOpen()) {
             this.panelShown.emit();
+            this.onShow.emit();
             this.scheduleAlignPanelPosition();
 
             if (this.filter() && this.filterInputAutoFocus()) {
@@ -304,12 +396,14 @@ export class TreeselectComponent implements ControlValueAccessor, OnDestroy {
         }
 
         this.panelHidden.emit();
+        this.onHide.emit();
     }
 
     closePanel(): void {
         if (this.state.isOpen()) {
             this.state.close(this.resetFilterOnHide());
             this.panelHidden.emit();
+            this.onHide.emit();
             this.onCvaTouched();
 
             queueMicrotask(() => {
@@ -324,6 +418,7 @@ export class TreeselectComponent implements ControlValueAccessor, OnDestroy {
         this.applyValue(null, true);
         this.expandedKeys.set(new Set<string>());
         this.cleared.emit();
+        this.onClear.emit();
     }
 
     async toggleNodeExpansion(event: Event, node: TreeNode): Promise<void> {
@@ -339,6 +434,7 @@ export class TreeselectComponent implements ControlValueAccessor, OnDestroy {
             nextExpanded.delete(node.key);
             this.expandedKeys.set(nextExpanded);
             this.nodeCollapse.emit({ originalEvent: event, node });
+            this.onNodeCollapse.emit({ originalEvent: event, node });
             this.scheduleAlignPanelPosition();
             return;
         }
@@ -350,6 +446,7 @@ export class TreeselectComponent implements ControlValueAccessor, OnDestroy {
         nextExpanded.add(node.key);
         this.expandedKeys.set(nextExpanded);
         this.nodeExpand.emit({ originalEvent: event, node });
+        this.onNodeExpand.emit({ originalEvent: event, node });
         this.scheduleAlignPanelPosition();
     }
 
@@ -387,11 +484,13 @@ export class TreeselectComponent implements ControlValueAccessor, OnDestroy {
         if (isSameNode) {
             this.applyValue(null, true);
             this.nodeUnselect.emit({ originalEvent: event, node });
+            this.onNodeUnselect.emit({ originalEvent: event, node });
             return;
         }
 
         this.applyValue(node.key, true);
         this.nodeSelect.emit({ originalEvent: event, node });
+        this.onNodeSelect.emit({ originalEvent: event, node });
     }
 
     onFilterInput(event: Event): void {
@@ -402,6 +501,11 @@ export class TreeselectComponent implements ControlValueAccessor, OnDestroy {
             originalEvent: event,
             query: target.value,
             filteredNodes: this.filteredNodes(),
+        });
+
+        this.onFilter.emit({
+            filter: target.value,
+            filteredValue: this.filteredNodes(),
         });
     }
 
@@ -645,12 +749,24 @@ export class TreeselectComponent implements ControlValueAccessor, OnDestroy {
         }
 
         if (this.selectionMode() === 'multiple') {
-            if (!Array.isArray(currentValue)) {
+            if (Array.isArray(currentValue)) {
+                const uniqueValues = Array.from(new Set(currentValue));
+                return uniqueValues.filter((key): key is string => typeof key === 'string' && validKeys.has(key));
+            }
+
+            if (!this.isMultipleSelectionMap(currentValue)) {
                 return null;
             }
 
-            const uniqueValues = Array.from(new Set(currentValue));
-            return uniqueValues.filter((key): key is string => typeof key === 'string' && validKeys.has(key));
+            const nextSelection: Record<string, boolean> = {};
+
+            for (const [key, selected] of Object.entries(currentValue)) {
+                if (selected && validKeys.has(key)) {
+                    nextSelection[key] = true;
+                }
+            }
+
+            return nextSelection;
         }
 
         if (!currentValue || Array.isArray(currentValue) || typeof currentValue === 'string') {
@@ -874,26 +990,42 @@ export class TreeselectComponent implements ControlValueAccessor, OnDestroy {
         const key = node.key;
         const isSelected = current.has(key);
 
-        if (this.metaKeySelection() && this.isMetaKeyEvent(event)) {
+        if (!this.metaKeySelection()) {
             if (isSelected) {
                 current.delete(key);
                 this.nodeUnselect.emit({ originalEvent: event, node });
+                this.onNodeUnselect.emit({ originalEvent: event, node });
             } else {
                 current.add(key);
                 this.nodeSelect.emit({ originalEvent: event, node });
+                this.onNodeSelect.emit({ originalEvent: event, node });
             }
         } else {
-            if (isSelected && current.size === 1) {
-                current.clear();
-                this.nodeUnselect.emit({ originalEvent: event, node });
+            if (this.isMetaKeyEvent(event)) {
+                if (isSelected) {
+                    current.delete(key);
+                    this.nodeUnselect.emit({ originalEvent: event, node });
+                    this.onNodeUnselect.emit({ originalEvent: event, node });
+                } else {
+                    current.add(key);
+                    this.nodeSelect.emit({ originalEvent: event, node });
+                    this.onNodeSelect.emit({ originalEvent: event, node });
+                }
             } else {
-                current.clear();
-                current.add(key);
-                this.nodeSelect.emit({ originalEvent: event, node });
+                if (isSelected && current.size === 1) {
+                    current.clear();
+                    this.nodeUnselect.emit({ originalEvent: event, node });
+                    this.onNodeUnselect.emit({ originalEvent: event, node });
+                } else {
+                    current.clear();
+                    current.add(key);
+                    this.nodeSelect.emit({ originalEvent: event, node });
+                    this.onNodeSelect.emit({ originalEvent: event, node });
+                }
             }
         }
 
-        this.applyValue(Array.from(current), true);
+        this.applyValue(this.toMultipleValue(current), true);
     }
 
     private toggleCheckboxNode(event: Event, node: TreeNode): void {
@@ -929,10 +1061,12 @@ export class TreeselectComponent implements ControlValueAccessor, OnDestroy {
 
         if (shouldCheck) {
             this.nodeSelect.emit({ originalEvent: event, node });
+            this.onNodeSelect.emit({ originalEvent: event, node });
             return;
         }
 
         this.nodeUnselect.emit({ originalEvent: event, node });
+        this.onNodeUnselect.emit({ originalEvent: event, node });
     }
 
     private recalculateAncestors(key: string, selection: TreeselectCheckboxSelection): void {
@@ -976,13 +1110,63 @@ export class TreeselectComponent implements ControlValueAccessor, OnDestroy {
 
     private getMultipleSelection(): string[] {
         const currentValue = this.internalValue();
-        return Array.isArray(currentValue) ? currentValue : [];
+
+        if (Array.isArray(currentValue)) {
+            return currentValue;
+        }
+
+        if (this.isMultipleSelectionMap(currentValue)) {
+            return Object.entries(currentValue)
+                .filter(([, selected]) => selected)
+                .map(([key]) => key);
+        }
+
+        return [];
+    }
+
+    private toMultipleValue(selectedKeys: Set<string>): TreeselectMultipleSelection {
+        if (this.shouldUseArrayForMultipleValue()) {
+            return Array.from(selectedKeys);
+        }
+
+        const asRecord: Record<string, boolean> = {};
+
+        for (const key of selectedKeys) {
+            asRecord[key] = true;
+        }
+
+        return asRecord;
+    }
+
+    private shouldUseArrayForMultipleValue(): boolean {
+        return Array.isArray(this.internalValue());
+    }
+
+    private isMultipleSelectionMap(value: unknown): value is Record<string, boolean> {
+        if (!value || typeof value !== 'object' || Array.isArray(value)) {
+            return false;
+        }
+
+        return Object.values(value).every((entry) => typeof entry === 'boolean');
+    }
+
+    private isCheckboxSelectionMap(value: unknown): value is TreeselectCheckboxSelection {
+        if (!value || typeof value !== 'object' || Array.isArray(value)) {
+            return false;
+        }
+
+        return Object.values(value).every((entry) => (
+            !!entry
+            && typeof entry === 'object'
+            && 'checked' in entry
+            && 'partialChecked' in entry
+        ));
     }
 
     private getCheckboxSelection(): TreeselectCheckboxSelection {
         const currentValue = this.internalValue();
 
-        if (!currentValue || Array.isArray(currentValue) || typeof currentValue === 'string') {
+        if (!this.isCheckboxSelectionMap(currentValue)) {
             return {};
         }
 
@@ -1001,9 +1185,46 @@ export class TreeselectComponent implements ControlValueAccessor, OnDestroy {
         return createTreeNodeIndex(nodes);
     }
 
+    private refreshProjectedTemplateMap(): void {
+        const mapped: Record<string, TemplateRef<unknown>> = {};
+
+        for (const projected of this.projectedTemplates ?? []) {
+            const key = projected.type?.trim().toLowerCase();
+
+            if (!key) {
+                continue;
+            }
+
+            mapped[key] = projected.template;
+        }
+
+        this.templateByType.set(mapped);
+    }
+
+    private joinClassValues(...values: (string | null | undefined)[]): string {
+        return values
+            .filter((value): value is string => !!value && value.trim().length > 0)
+            .join(' ')
+            .trim();
+    }
+
+    private mergeStyles(
+        base: Record<string, string> | null,
+        compat: Record<string, string> | null,
+    ): Record<string, string> | null {
+        if (!base && !compat) {
+            return null;
+        }
+
+        return {
+            ...(compat ?? {}),
+            ...(base ?? {}),
+        };
+    }
+
     private getFocusableNodeButtons(): HTMLButtonElement[] {
         return Array.from(
-            this.host.nativeElement.querySelectorAll('.treeselect__node-label:not(:disabled)'),
+            this.host.nativeElement.querySelectorAll('.p-treenode-label:not(:disabled)'),
         ) as HTMLButtonElement[];
     }
 
@@ -1028,7 +1249,7 @@ export class TreeselectComponent implements ControlValueAccessor, OnDestroy {
     }
 
     private focusNodeButtonByKey(nodeKey: string): void {
-        const selector = `.treeselect__node-label[data-node-key="${CSS.escape(nodeKey)}"]`;
+        const selector = `.p-treenode-label[data-node-key="${CSS.escape(nodeKey)}"]`;
         const button = this.host.nativeElement.querySelector(selector) as HTMLButtonElement | null;
         button?.focus();
     }

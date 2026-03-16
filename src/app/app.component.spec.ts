@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { AppComponent } from './app.component';
-import { TreeselectOpsService } from './ops/treeselect-ops.service';
+import { TreeselectOpsService } from './treeselect/ops/treeselect-ops.service';
 
 describe('AppComponent', () => {
   const opsServiceMock = {

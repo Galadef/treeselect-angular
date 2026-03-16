@@ -3,7 +3,7 @@ import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } 
 import { TreeselectComponent } from './treeselect/components/treeselect/treeselect.component';
 import { TreeNode } from './treeselect/models/tree-node.model';
 import { TreeselectCheckboxSelection } from './treeselect/models/treeselect-selection.model';
-import { TreeselectOpsService } from './ops/treeselect-ops.service';
+import { TreeselectOpsService } from './treeselect/ops/treeselect-ops.service';
 
 @Component({
   selector: 'app-root',
@@ -108,6 +108,8 @@ export class AppComponent {
   protected readonly selectedKeys = signal<string[]>([]);
   protected readonly checkedNodes = signal<TreeselectCheckboxSelection>({});
   protected readonly deepCheckedNodes = signal<TreeselectCheckboxSelection>({});
+  protected readonly deepConfigCheckedNodes = signal<TreeselectCheckboxSelection>({});
+  protected deepCheckboxStartLevel = 3;
   protected readonly rolloutSeed = signal('local-demo-user');
   protected readonly treeselectRolloutPercent = signal(100);
   protected readonly treeselectFeatureEnabled = computed(() =>
@@ -145,6 +147,15 @@ export class AppComponent {
     this.deepCheckedNodes.set(nextValue as TreeselectCheckboxSelection);
   }
 
+  protected onDeepConfigCheckboxSelectionChange(nextValue: unknown): void {
+    if (!nextValue || Array.isArray(nextValue) || typeof nextValue === 'string') {
+      this.deepConfigCheckedNodes.set({});
+      return;
+    }
+
+    this.deepConfigCheckedNodes.set(nextValue as TreeselectCheckboxSelection);
+  }
+
   protected onVirtualSelectionChange(nextValue: unknown): void {
     this.virtualValue.set(typeof nextValue === 'string' ? nextValue : null);
   }
@@ -169,6 +180,10 @@ export class AppComponent {
 
   protected deepCheckedNodeCount(): number {
     return Object.keys(this.deepCheckedNodes()).length;
+  }
+
+  protected deepConfigCheckedNodeCount(): number {
+    return Object.keys(this.deepConfigCheckedNodes()).length;
   }
 
   protected markReactiveTouched(): void {

@@ -7,6 +7,8 @@ export interface TreeselectCheckboxState {
     partialChecked: boolean;
 }
 
+export type TreeselectMultipleSelection = string[] | Record<string, boolean>;
+
 export type TreeselectCheckboxSelection = Record<string, TreeselectCheckboxState>;
 
-export type TreeselectValue = string | string[] | TreeselectCheckboxSelection | null;
+export type TreeselectValue = string | TreeselectMultipleSelection | TreeselectCheckboxSelection | null;

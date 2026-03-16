@@ -2,62 +2,76 @@
     display: block;
 }
 
-.treeselect {
+/* ===== Container ===== */
+.p-treeselect {
     position: relative;
-    width: 100%;
-}
-
-.treeselect__control {
-    position: relative;
-}
-
-.treeselect__trigger {
     width: 100%;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    gap: 0.75rem;
     border: 1px solid var(--ts-border);
     border-radius: var(--ts-radius-md);
     background: var(--ts-surface);
-    padding: var(--ts-space-3) var(--ts-space-4);
-    padding-inline-end: 4.5rem;
-    color: var(--ts-text);
     transition:
         border-color 0.2s ease,
         box-shadow 0.2s ease,
         background-color 0.2s ease;
+    cursor: pointer;
 }
 
-.treeselect__trigger:hover {
+.p-treeselect:hover {
     border-color: var(--ts-border-hover);
     background: var(--ts-surface-hover);
 }
 
-.treeselect__trigger:active {
-    background: var(--ts-surface-active);
+/* ===== Label container ===== */
+.p-treeselect-label-container {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
 }
 
-.treeselect__value {
+/* Our accessible combobox trigger button (transparent, inside label container) */
+.p-treeselect-trigger-button {
+    flex: 1 1 auto;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: var(--ts-space-3) var(--ts-space-4);
+    cursor: pointer;
+    color: var(--ts-text);
+    text-align: left;
+    overflow: hidden;
+}
+
+/* ===== Label ===== */
+.p-treeselect-label {
     text-align: left;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    flex: 1;
+    min-width: 0;
 }
 
-.treeselect__trigger-icon {
-    display: inline-flex;
-    align-items: center;
+.p-treeselect-label.p-placeholder {
     color: var(--ts-text-secondary);
 }
 
-.treeselect__chips {
+/* Optional leading icon inside trigger button */
+.p-treeselect-trigger-icon-prefix {
     display: inline-flex;
-    flex-wrap: wrap;
-    gap: 0.25rem;
+    align-items: center;
+    flex-shrink: 0;
+    color: var(--ts-text-secondary);
 }
 
-.treeselect__chip {
+/* ===== Chips (display=chip) ===== */
+.p-treeselect-token {
     display: inline-flex;
     align-items: center;
     border-radius: 999px;
@@ -66,41 +80,44 @@
     color: var(--ts-chip-text);
     padding: var(--ts-space-1) var(--ts-space-3);
     font-size: 0.75rem;
+    margin: 0.1rem;
 }
 
-.treeselect__actions {
-    position: absolute;
-    inset-inline-end: 0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
+/* ===== Clear icon button ===== */
+.p-treeselect-clear-icon {
+    flex-shrink: 0;
     display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
-    pointer-events: none;
-}
-
-.treeselect__icon-btn {
     border: 0;
     background: transparent;
     cursor: pointer;
     color: var(--ts-text-secondary);
     border-radius: var(--ts-radius-sm);
+    padding: 0.25rem;
     transition: background-color 0.2s ease;
 }
 
-.treeselect__clear-btn {
-    pointer-events: auto;
-}
-
-.treeselect__toggle-icon {
-    color: var(--ts-text-secondary);
-}
-
-.treeselect__icon-btn:hover {
+.p-treeselect-clear-icon:hover {
     background: var(--ts-surface-hover);
 }
 
-.treeselect__panel {
+/* ===== Chevron/trigger div ===== */
+.p-treeselect-trigger {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--ts-space-3) var(--ts-space-4);
+}
+
+.p-treeselect-trigger-icon {
+    display: inline-flex;
+    align-items: center;
+    color: var(--ts-text-secondary);
+}
+
+/* ===== Panel ===== */
+.p-treeselect-panel {
     position: absolute;
     inset-inline: 0;
     top: calc(100% + 0.4rem);
@@ -110,27 +127,34 @@
     background: var(--ts-surface);
     box-shadow: var(--ts-shadow-lg);
     padding: 0.5rem;
-    max-height: 320px;
-    overflow: auto;
 }
 
-.treeselect__panel--top {
+.p-treeselect-panel.p-treeselect-panel--top {
     top: auto;
     bottom: calc(100% + 0.4rem);
 }
 
-.treeselect__filter {
+/* ===== Filter header inside panel ===== */
+.p-treeselect-header {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
     margin-bottom: 0.5rem;
+}
+
+.p-treeselect-filter-container {
+    flex: 1;
     display: flex;
     align-items: center;
     gap: 0.4rem;
 }
 
-.treeselect__filter-icon {
+.p-treeselect-filter-icon {
+    flex-shrink: 0;
     color: var(--ts-text-secondary);
 }
 
-.treeselect__filter input {
+.p-treeselect-filter {
     width: 100%;
     border: 1px solid var(--ts-border);
     border-radius: var(--ts-radius-sm);
@@ -139,7 +163,26 @@
     background: var(--ts-surface);
 }
 
-.treeselect__loading {
+/* Close button in filter header */
+.p-treeselect-close {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    color: var(--ts-text-secondary);
+    border-radius: var(--ts-radius-sm);
+    padding: 0.25rem;
+    transition: background-color 0.2s ease;
+}
+
+.p-treeselect-close:hover {
+    background: var(--ts-surface-hover);
+}
+
+/* ===== Loading indicator ===== */
+.p-treeselect-loading {
     border: 1px dashed var(--ts-border);
     border-radius: var(--ts-radius-sm);
     padding: 0.4rem 0.6rem;
@@ -148,23 +191,23 @@
     margin-bottom: 0.5rem;
 }
 
-.treeselect__loading[data-loading-mode='mask'] {
+.p-treeselect-loading[data-loading-mode='mask'] {
     background: color-mix(in srgb, var(--ts-primary) 8%, transparent);
 }
 
-.treeselect__slot {
+/* ===== Header / footer custom slots ===== */
+.p-treeselect-panel-header {
     padding: 0.2rem 0.1rem;
-}
-
-.treeselect__slot--header {
     margin-bottom: 0.35rem;
 }
 
-.treeselect__slot--footer {
+.p-treeselect-panel-footer {
+    padding: 0.2rem 0.1rem;
     margin-top: 0.35rem;
 }
 
-.treeselect__empty {
+/* ===== Empty message ===== */
+.p-treeselect-empty-message {
     padding: 0.5rem;
     border: 1px dashed var(--ts-border);
     border-radius: var(--ts-radius-sm);
@@ -172,32 +215,41 @@
     text-align: center;
 }
 
-.treeselect__tree,
-.treeselect__tree ul {
+/* ===== Items wrapper ===== */
+.p-treeselect-items-wrapper {
+    max-height: 280px;
+    overflow: auto;
+}
+
+/* ===== Virtual scroll ===== */
+.p-treeselect-virtual-scroll-viewport {
+    max-height: 280px;
+    overflow: auto;
+}
+
+.p-treeselect-virtual-spacer {
+    position: relative;
+}
+
+/* ===== Tree ===== */
+.p-tree,
+.p-treenode-children {
     list-style: none;
     margin: 0;
     padding: 0;
 }
 
-.treeselect__virtual-viewport {
-    max-height: 320px;
-    overflow: auto;
-}
-
-.treeselect__virtual-spacer {
-    position: relative;
-}
-
-.treeselect__tree--virtual {
+.p-treeselect-virtual-spacer>.p-tree {
     position: absolute;
     inset: 0 0 auto 0;
 }
 
-.treeselect__node {
+/* ===== Tree nodes ===== */
+.p-treenode {
     margin: 0.1rem 0;
 }
 
-.treeselect__node-content {
+.p-treenode-content {
     display: flex;
     align-items: center;
     gap: 0.2rem;
@@ -205,37 +257,80 @@
     transition: background-color 0.2s ease;
 }
 
-.treeselect__node-content.is-selected {
+.p-treenode-content.p-highlight {
     background: var(--ts-selected-bg);
 }
 
-.treeselect__spacer {
-    display: inline-block;
-    width: 1.25rem;
+.p-treenode-content.p-treenode-selectable:hover:not(.p-disabled) {
+    background: var(--ts-surface-hover);
 }
 
-.treeselect__node-label {
+/* ===== Node toggler (expand/collapse) ===== */
+.p-treenode-toggler {
+    flex-shrink: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    color: var(--ts-text-secondary);
+    border-radius: var(--ts-radius-sm);
+    padding: 0.2rem;
+    display: inline-flex;
+    align-items: center;
+    transition: background-color 0.2s ease;
+}
+
+.p-treenode-toggler:hover {
+    background: var(--ts-surface-hover);
+}
+
+.p-treenode-toggler-icon {
+    display: inline-flex;
+    align-items: center;
+}
+
+/* ===== Leaf spacer (no expand/collapse) ===== */
+.p-treenode-leaf-icon {
+    display: inline-block;
+    width: 1.25rem;
+    flex-shrink: 0;
+}
+
+/* ===== Node label (select action) ===== */
+.p-treenode-label {
+    flex: 1;
+    min-width: 0;
     border: 0;
     background: transparent;
     text-align: left;
-    width: 100%;
     padding: 0.3rem 0.4rem;
     cursor: pointer;
     color: var(--ts-text);
     border-radius: var(--ts-radius-sm);
 }
 
-.treeselect__node-error {
+.p-treenode-label:hover:not(:disabled) {
+    background: var(--ts-surface-hover);
+}
+
+.p-treenode-label:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.p-treenode-error {
     font-size: 0.75rem;
     color: var(--ts-danger);
     padding-inline-end: 0.35rem;
 }
 
-.treeselect__node-label:hover:not(:disabled) {
-    background: var(--ts-surface-hover);
+/* ===== Checkbox ===== */
+.p-checkbox {
+    flex-shrink: 0;
+    display: inline-grid;
+    place-items: center;
 }
 
-.treeselect__checkbox {
+.p-checkbox-box {
     width: 1rem;
     height: 1rem;
     border-radius: 0.2rem;
@@ -244,49 +339,55 @@
     place-items: center;
     font-size: 0.75rem;
     color: transparent;
-}
-
-.treeselect__checkbox-btn {
-    border: 0;
-    background: transparent;
+    background: var(--ts-surface);
+    cursor: pointer;
     padding: 0;
     margin: 0;
-    display: inline-grid;
-    place-items: center;
-    cursor: pointer;
-    border-radius: 0.2rem;
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease;
 }
 
-.treeselect__checkbox-btn:disabled {
+.p-checkbox-box:disabled {
     cursor: not-allowed;
     opacity: 0.6;
 }
 
-.treeselect__checkbox.is-checked,
-.treeselect__checkbox.is-partial {
+.p-checkbox-box.p-highlight {
     background: var(--ts-primary);
     border-color: var(--ts-primary);
     color: var(--ts-primary-contrast);
 }
 
-.treeselect__node-label:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
+.p-checkbox.p-indeterminate .p-checkbox-box {
+    background: var(--ts-primary);
+    border-color: var(--ts-primary);
+    color: var(--ts-primary-contrast);
 }
 
-.treeselect__node-label:focus-visible,
-.treeselect__trigger:focus-visible,
-.treeselect__filter input:focus-visible {
-    outline: 2px solid var(--ts-focus);
-    outline-offset: 2px;
+.p-checkbox-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    color: inherit;
 }
 
-.treeselect--disabled {
+/* ===== Disabled state ===== */
+.p-treeselect.p-disabled {
     opacity: 0.7;
     pointer-events: none;
 }
 
-.treeselect--invalid .treeselect__trigger {
+/* ===== Invalid state ===== */
+.p-treeselect.ng-invalid {
     border-color: var(--ts-danger);
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--ts-danger) 20%, transparent);
+}
+
+/* ===== Focus visible ===== */
+.p-treeselect-trigger-button:focus-visible,
+.p-treeselect-filter:focus-visible {
+    outline: 2px solid var(--ts-focus);
+    outline-offset: 2px;
 }

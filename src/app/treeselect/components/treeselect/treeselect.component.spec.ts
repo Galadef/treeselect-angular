@@ -317,7 +317,7 @@ describe('TreeselectComponent behavior', () => {
         fixture.detectChanges();
 
         const checkboxButton = fixture.nativeElement
-            .querySelector('.treeselect__panel .treeselect__checkbox-btn') as HTMLButtonElement;
+            .querySelector('.p-treeselect-panel .p-checkbox-box') as HTMLButtonElement;
 
         expect(checkboxButton).toBeTruthy();
         checkboxButton.click();
@@ -526,9 +526,9 @@ describe('TreeselectComponent behavior', () => {
         component.togglePanel();
         fixture.detectChanges();
 
-        const trigger = fixture.nativeElement.querySelector('.treeselect__trigger') as HTMLButtonElement;
+        const trigger = fixture.nativeElement.querySelector('.p-treeselect-trigger-button') as HTMLButtonElement;
         const nestedButtons = trigger.querySelectorAll('button');
-        const tree = fixture.nativeElement.querySelector('.treeselect__tree') as HTMLElement;
+        const tree = fixture.nativeElement.querySelector('.p-tree') as HTMLElement;
 
         expect(nestedButtons.length).toBe(0);
         expect(trigger.getAttribute('aria-controls')).toBe(component.treeId);
@@ -898,7 +898,7 @@ describe('TreeselectComponent behavior', () => {
         component.togglePanel();
         const closeSpy = spyOn(component, 'closePanel').and.callThrough();
 
-        const triggerButton = fixture.nativeElement.querySelector('.treeselect__trigger') as HTMLButtonElement;
+        const triggerButton = fixture.nativeElement.querySelector('.p-treeselect-trigger-button') as HTMLButtonElement;
         component.onDocumentClick({ target: triggerButton } as unknown as Event);
         expect(closeSpy).not.toHaveBeenCalled();
 

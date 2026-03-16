@@ -54,6 +54,26 @@
       </section>
 
       <section>
+        <h2>Checkbox profundo con niveles no seleccionables</h2>
+        <label>
+          Nivel inicial seleccionable:
+          <input type="number" min="1" max="4" step="1" [(ngModel)]="deepCheckboxStartLevel"
+            name="deepCheckboxStartLevel" />
+        </label>
+        <app-treeselect [options]="checkboxDeepOptions" selectionMode="checkbox" display="comma"
+          [placeholder]="'Desde el nivel configurado, hacia abajo'" [showClear]="true" [filter]="true"
+          [checkboxSelectionStartLevel]="deepCheckboxStartLevel" [value]="deepConfigCheckedNodes()"
+          (valueChange)="onDeepConfigCheckboxSelectionChange($event)"
+          (panelShown)="onTreeselectShow('checkboxDeepConfig')" (panelHidden)="onTreeselectHide('checkboxDeepConfig')"
+          (cleared)="onTreeselectClear('checkboxDeepConfig')" />
+        <p class="selection">
+          Con valor {{ deepCheckboxStartLevel }}, los niveles 1 a {{ deepCheckboxStartLevel - 1 }} quedan sin checkbox y
+          no son seleccionables.
+        </p>
+        <p class="selection">Nodos activos (configurable): {{ deepConfigCheckedNodeCount() }}</p>
+      </section>
+
+      <section>
         <h2>Reactive Forms (required)</h2>
         <form [formGroup]="reactiveForm">
           <app-treeselect [options]="options" formControlName="tree" [placeholder]="'Campo requerido'"
