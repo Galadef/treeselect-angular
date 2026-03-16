@@ -42,4 +42,13 @@ describe('TreeselectOpsService', () => {
         expect(payload['component']).toBe('app-treeselect');
         expect(typeof payload['timestamp']).toBe('string');
     });
+
+    it('does not log when logging is disabled', () => {
+        const consoleSpy = spyOn(console, 'info');
+
+        (service as unknown as { loggingEnabled: boolean }).loggingEnabled = false;
+        service.trackClear('ts-3');
+
+        expect(consoleSpy).not.toHaveBeenCalled();
+    });
 });

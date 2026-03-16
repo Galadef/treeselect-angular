@@ -43,52 +43,35 @@ Para este flujo simplificado, las validaciones se ejecutan en local:
 
 Este flujo actúa como validación local completa (lint + tests unitarios + build + E2E automáticos).
 
-## Despliegue manual a GitHub Pages
+## Despliegue a GitHub Pages
 
-El despliegue quedó configurado para ejecutarse solo manualmente con GitHub Actions.
+El despliegue se realiza por script local usando `angular-cli-ghpages`.
 
-Workflow:
-
-- `.github/workflows/deploy-pages.yml`
-
-### 1. Commitear y subir cambios
+### 1. Publicar con un solo comando
 
 ```bash
-git add .
-git commit -m "feat: describe-tu-cambio"
-git push origin main
+npm run deploy
 ```
 
-Nota: este repositorio usa commitlint convencional, por eso el mensaje debe seguir formato tipo `feat: ...`, `fix: ...`, `chore: ...`.
+Este script:
 
-### 2. Lanzar deploy manual con GitHub CLI
+1. compila en producción con base href para Pages (`/treeselect-angular/`),
+2. publica `dist/treeselect-angular/browser` en la rama `gh-pages`.
 
-Si es la primera vez, autentica `gh`:
+Si es la primera vez en tu máquina, autentica GitHub CLI antes:
 
 ```bash
 gh auth login
 ```
 
-Ejecuta el workflow manual:
-
-```bash
-gh workflow run deploy-pages.yml
-```
-
-Ver estado de la ejecución:
-
-```bash
-gh run list --workflow deploy-pages.yml
-gh run watch
-```
-
-### 3. URL esperada
+### 2. URL esperada
 
 Al terminar, el sitio se publica en:
 
 - `https://galadef.github.io/treeselect-angular/`
 
 El workflow ya compila con base href correcto para Pages (`/treeselect-angular/`) y publica el artefacto desde `dist/treeselect-angular/browser`.
+El script `deploy` compila con base href correcto para Pages (`/treeselect-angular/`) y publica el artefacto desde `dist/treeselect-angular/browser`.
 
 ## Estado actual
 

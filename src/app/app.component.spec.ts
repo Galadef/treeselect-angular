@@ -91,6 +91,30 @@ describe('AppComponent', () => {
     expect(app.deepCheckedNodes()).toEqual({});
   });
 
+  it('handles deep config checkbox selection normalization across input shapes', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance as unknown as {
+      onDeepConfigCheckboxSelectionChange: (value: unknown) => void;
+      deepConfigCheckedNodes: () => Record<string, unknown>;
+      deepConfigCheckedNodeCount: () => number;
+    };
+
+    app.onDeepConfigCheckboxSelectionChange({
+      'org:it:platform:sre': { checked: true, partialChecked: false },
+    });
+    expect(app.deepConfigCheckedNodes()['org:it:platform:sre']).toBeTruthy();
+    expect(app.deepConfigCheckedNodeCount()).toBe(1);
+
+    app.onDeepConfigCheckboxSelectionChange('invalid');
+    expect(app.deepConfigCheckedNodes()).toEqual({});
+
+    app.onDeepConfigCheckboxSelectionChange([]);
+    expect(app.deepConfigCheckedNodes()).toEqual({});
+
+    app.onDeepConfigCheckboxSelectionChange(null);
+    expect(app.deepConfigCheckedNodes()).toEqual({});
+  });
+
   it('updates virtual and lazy selected values', () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance as unknown as {
