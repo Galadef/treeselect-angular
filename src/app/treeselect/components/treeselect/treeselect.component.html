@@ -105,6 +105,26 @@
         }
         } @else {
         <div class="p-treeselect-items-wrapper" [style.max-height]="panelScrollHeight()">
+            @if (showSelectAll() && hasSelectableCheckboxNodes()) {
+            <div class="p-treeselect-select-all p-treenode">
+                <div class="p-treenode-content p-treenode-selectable">
+                    <div class="p-checkbox">
+                        <button class="p-checkbox-box" type="button" [class.p-highlight]="isSelectAllChecked()"
+                            [attr.aria-label]="selectAllLabel()" (click)="toggleSelectAll($event)">
+                            <span class="p-checkbox-icon">
+                                @if (isSelectAllChecked()) {
+                                ✓
+                                }
+                            </span>
+                        </button>
+                    </div>
+                    <button class="p-treenode-label p-treeselect-select-all-label" type="button"
+                        (click)="toggleSelectAll($event)">
+                        {{ selectAllLabel() }}
+                    </button>
+                </div>
+            </div>
+            }
             @if (virtualScroll()) {
             <div #virtualViewport class="p-treeselect-virtual-scroll-viewport" [style.max-height]="panelScrollHeight()"
                 (scroll)="onVirtualScroll($event)">
@@ -122,7 +142,7 @@
                             [style.height.px]="virtualScrollItemSize()">
                             <div class="p-treenode-content"
                                 [class.p-treenode-selectable]="row.node.selectable !== false && !row.node.disabled && !isDisabled()"
-                                [class.p-highlight]="isSelected(row.node)"
+                                [class.p-highlight]="selectionMode() !== 'checkbox' && isSelected(row.node)"
                                 [class.p-disabled]="row.node.disabled || row.node.selectable === false">
                                 @if (row.node.children?.length || (lazy() && row.node.leaf !== true)) {
                                 <button class="p-treenode-toggler" type="button"
@@ -208,7 +228,7 @@
                 [style.padding-inline-start.rem]="(level - 1) * 0.9">
                 <div class="p-treenode-content"
                     [class.p-treenode-selectable]="node.selectable !== false && !node.disabled && !isDisabled()"
-                    [class.p-highlight]="isSelected(node)"
+                    [class.p-highlight]="selectionMode() !== 'checkbox' && isSelected(node)"
                     [class.p-disabled]="node.disabled || node.selectable === false">
                     @if (node.children?.length || (lazy() && node.leaf !== true)) {
                     <button class="p-treenode-toggler" type="button"

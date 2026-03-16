@@ -221,6 +221,14 @@
     overflow: auto;
 }
 
+.p-treeselect-select-all {
+    margin: 0.1rem 0;
+}
+
+.p-treeselect-select-all-label {
+    font-weight: inherit;
+}
+
 /* ===== Virtual scroll ===== */
 .p-treeselect-virtual-scroll-viewport {
     max-height: 280px;

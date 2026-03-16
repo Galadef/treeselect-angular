@@ -30,9 +30,10 @@
       <section>
         <h2>Checkbox</h2>
         <app-treeselect [options]="options" selectionMode="checkbox" display="comma" [placeholder]="'Marca nodos'"
-          [showClear]="true" [filter]="true" [checkboxSelectionStartLevel]="2" [value]="checkedNodes()"
-          (valueChange)="onCheckboxSelectionChange($event)" (panelShown)="onTreeselectShow('checkbox')"
-          (panelHidden)="onTreeselectHide('checkbox')" (cleared)="onTreeselectClear('checkbox')" />
+          [showClear]="true" [showSelectAll]="true" [filter]="true" [checkboxSelectionStartLevel]="2"
+          [value]="checkedNodes()" (valueChange)="onCheckboxSelectionChange($event)"
+          (panelShown)="onTreeselectShow('checkbox')" (panelHidden)="onTreeselectHide('checkbox')"
+          (cleared)="onTreeselectClear('checkbox')" />
         <p class="selection">Nodos activos: {{ checkedNodeCount() }}</p>
         <p class="selection">
           Cada valor muestra un checkbox a la izquierda y puedes seleccionar/desseleccionar haciendo clic.
@@ -62,8 +63,8 @@
         </label>
         <app-treeselect [options]="checkboxDeepOptions" selectionMode="checkbox" display="comma"
           [placeholder]="'Desde el nivel configurado, hacia abajo'" [showClear]="true" [filter]="true"
-          [checkboxSelectionStartLevel]="deepCheckboxStartLevel" [value]="deepConfigCheckedNodes()"
-          (valueChange)="onDeepConfigCheckboxSelectionChange($event)"
+          [showSelectAll]="true" [checkboxSelectionStartLevel]="deepCheckboxStartLevel"
+          [value]="deepConfigCheckedNodes()" (valueChange)="onDeepConfigCheckboxSelectionChange($event)"
           (panelShown)="onTreeselectShow('checkboxDeepConfig')" (panelHidden)="onTreeselectHide('checkboxDeepConfig')"
           (cleared)="onTreeselectClear('checkboxDeepConfig')" />
         <p class="selection">

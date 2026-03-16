@@ -77,6 +77,8 @@ export class TreeselectComponent implements AfterContentInit, ControlValueAccess
     readonly metaKeySelection = input(false);
     readonly placeholder = input('Selecciona');
     readonly showClear = input(false);
+    readonly showSelectAll = input(false);
+    readonly selectAllLabel = input('Seleccionar todos');
     readonly variant = input<'filled' | 'outlined'>('outlined');
 
     readonly filter = input(false);
@@ -203,6 +205,12 @@ export class TreeselectComponent implements AfterContentInit, ControlValueAccess
     readonly mergedRootStyle = computed(() => this.mergeStyles(this.rootStyle(), this.containerStyleCompat()));
     readonly panelScrollHeight = computed(() => this.virtualScrollOptions()?.scrollHeight ?? this.scrollHeight());
     readonly isFilledVariant = computed(() => this.variant() === 'filled');
+    readonly selectableCheckboxKeys = computed(() => this.collectSelectableCheckboxKeys(this.normalizedOptions()));
+    readonly allSelectableChecked = computed(() => {
+        const selectableKeys = this.selectableCheckboxKeys();
+
+        return selectableKeys.length > 0 && selectableKeys.every((key) => this.getCheckboxSelection()[key]?.checked);
+    });
     readonly resolvedValueTemplate = computed(() => this.valueTemplate() ?? this.templateByType()['value'] ?? null);
     readonly resolvedHeaderTemplate = computed(() => this.headerTemplate() ?? this.templateByType()['header'] ?? null);
     readonly resolvedFooterTemplate = computed(() => this.footerTemplate() ?? this.templateByType()['footer'] ?? null);
@@ -540,6 +548,41 @@ export class TreeselectComponent implements AfterContentInit, ControlValueAccess
 
     shouldRenderCheckbox(level: number): boolean {
         return this.selectionMode() === 'checkbox' && level >= this.getCheckboxStartLevel();
+    }
+
+    hasSelectableCheckboxNodes(): boolean {
+        return this.selectionMode() === 'checkbox' && this.selectableCheckboxKeys().length > 0;
+    }
+
+    isSelectAllChecked(): boolean {
+        return this.allSelectableChecked();
+    }
+
+    toggleSelectAll(event: Event): void {
+        event.stopPropagation();
+
+        if (this.selectionMode() !== 'checkbox') {
+            return;
+        }
+
+        this.expandedKeys.set(this.collectExpandableNodeKeys(this.normalizedOptions()));
+
+        if (this.allSelectableChecked()) {
+            this.applyValue({}, true);
+            return;
+        }
+
+        const selectableKeys = this.selectableCheckboxKeys();
+        const nextSelection: TreeselectCheckboxSelection = {};
+
+        for (const key of selectableKeys) {
+            nextSelection[key] = {
+                checked: true,
+                partialChecked: false,
+            };
+        }
+
+        this.applyValue(nextSelection, true);
     }
 
     trackByNodeKey(index: number, node: TreeNode): string {
@@ -960,6 +1003,49 @@ export class TreeselectComponent implements AfterContentInit, ControlValueAccess
         }
 
         return node.label.toLowerCase();
+    }
+
+    private collectSelectableCheckboxKeys(nodes: TreeNode[]): string[] {
+        const keys: string[] = [];
+
+        for (const node of nodes) {
+            if (this.isSelectableCheckboxNode(node)) {
+                keys.push(node.key as string);
+            }
+
+            if (node.children?.length) {
+                keys.push(...this.collectSelectableCheckboxKeys(node.children));
+            }
+        }
+
+        return keys;
+    }
+
+    private collectExpandableNodeKeys(nodes: TreeNode[]): Set<string> {
+        const expanded = new Set<string>();
+
+        for (const node of nodes) {
+            if (node.key && (node.children?.length || (this.lazy() && node.leaf !== true))) {
+                expanded.add(node.key);
+            }
+
+            if (node.children?.length) {
+                const childExpanded = this.collectExpandableNodeKeys(node.children);
+
+                for (const key of childExpanded) {
+                    expanded.add(key);
+                }
+            }
+        }
+
+        return expanded;
+    }
+
+    private isSelectableCheckboxNode(node: TreeNode): boolean {
+        return !!node.key
+            && !node.disabled
+            && node.selectable !== false
+            && this.isCheckboxSelectableNode(node);
     }
 
     private alignPanelPosition(): void {

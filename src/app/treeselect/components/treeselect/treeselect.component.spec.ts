@@ -326,6 +326,103 @@ describe('TreeselectComponent behavior', () => {
         expect(component.hasValue()).toBeTrue();
     });
 
+    it('renders and toggles a select-all checkbox for selectable nodes', async () => {
+        const fixture = await createComponent();
+        const component = fixture.componentInstance;
+        const firstRoot = options[0] as TreeNode;
+        const secondRoot = options[1] as TreeNode;
+
+        fixture.componentRef.setInput('selectionMode', 'checkbox');
+        fixture.componentRef.setInput('showSelectAll', true);
+        fixture.detectChanges();
+
+        component.togglePanel();
+        fixture.detectChanges();
+
+        const selectAllButton = fixture.nativeElement
+            .querySelector('.p-treeselect-select-all .p-checkbox-box') as HTMLButtonElement;
+
+        expect(selectAllButton).toBeTruthy();
+        expect(component.isSelectAllChecked()).toBeFalse();
+
+        selectAllButton.click();
+        fixture.detectChanges();
+
+        expect(component.isSelectAllChecked()).toBeTrue();
+        expect(component.isSelected(firstRoot)).toBeTrue();
+        expect(component.isSelected(options[0].children?.[0] as TreeNode)).toBeTrue();
+        expect(component.isSelected(secondRoot)).toBeTrue();
+        expect(component.isNodeExpanded(firstRoot)).toBeTrue();
+        expect(component.isNodeExpanded(secondRoot)).toBeTrue();
+
+        selectAllButton.click();
+        fixture.detectChanges();
+
+        expect(component.hasValue()).toBeFalse();
+        expect(component.isSelectAllChecked()).toBeFalse();
+        expect(component.isNodeExpanded(firstRoot)).toBeTrue();
+        expect(component.isNodeExpanded(secondRoot)).toBeTrue();
+    });
+
+    it('select-all respects non-selectable checkbox levels', async () => {
+        const fixture = await createComponent();
+        const component = fixture.componentInstance;
+        const firstRoot = options[0] as TreeNode;
+        const secondRoot = options[1] as TreeNode;
+
+        fixture.componentRef.setInput('selectionMode', 'checkbox');
+        fixture.componentRef.setInput('showSelectAll', true);
+        fixture.componentRef.setInput('checkboxSelectionStartLevel', 2);
+        fixture.detectChanges();
+
+        component.toggleSelectAll(new MouseEvent('click'));
+
+        expect(component.isSelected(firstRoot)).toBeFalse();
+        expect(component.isSelected(secondRoot)).toBeFalse();
+        expect(component.isSelected(options[0].children?.[0] as TreeNode)).toBeTrue();
+        expect(component.isSelected(options[0].children?.[1] as TreeNode)).toBeTrue();
+        expect(component.isSelected(options[1].children?.[0] as TreeNode)).toBeTrue();
+        expect(component.isNodeExpanded(firstRoot)).toBeTrue();
+        expect(component.isNodeExpanded(secondRoot)).toBeTrue();
+        expect(component.selectableCheckboxKeys()).not.toContain((options[0] as TreeNode).key as string);
+    });
+
+    it('keeps select-all binary when individual checkbox state changes', async () => {
+        const fixture = await createComponent();
+        const component = fixture.componentInstance;
+        const firstRoot = options[0] as TreeNode;
+        const firstLeaf = options[0].children?.[0] as TreeNode;
+        const secondLeaf = options[0].children?.[1] as TreeNode;
+        const thirdLeaf = options[1].children?.[0] as TreeNode;
+
+        fixture.componentRef.setInput('selectionMode', 'checkbox');
+        fixture.componentRef.setInput('showSelectAll', true);
+        fixture.componentRef.setInput('checkboxSelectionStartLevel', 2);
+        fixture.detectChanges();
+
+        component.toggleSelectAll(new MouseEvent('click'));
+        expect(component.isSelectAllChecked()).toBeTrue();
+
+        component.selectNode(new MouseEvent('click'), firstLeaf);
+        expect(component.isSelectAllChecked()).toBeFalse();
+        expect(component.isNodeExpanded(firstRoot)).toBeTrue();
+
+        component.selectNode(new MouseEvent('click'), firstLeaf);
+        expect(component.isSelectAllChecked()).toBeTrue();
+
+        component.selectNode(new MouseEvent('click'), secondLeaf);
+        expect(component.isSelectAllChecked()).toBeFalse();
+
+        component.selectNode(new MouseEvent('click'), secondLeaf);
+        expect(component.isSelectAllChecked()).toBeTrue();
+
+        component.selectNode(new MouseEvent('click'), thirdLeaf);
+        expect(component.isSelectAllChecked()).toBeFalse();
+
+        component.selectNode(new MouseEvent('click'), thirdLeaf);
+        expect(component.isSelectAllChecked()).toBeTrue();
+    });
+
     it('marks parent partial when some children are selected and checked when all are selected', async () => {
         const fixture = await createComponent();
         const component = fixture.componentInstance;
@@ -414,6 +511,8 @@ describe('TreeselectComponent behavior', () => {
         fixture.componentRef.setInput('display', 'chip');
         fixture.componentRef.setInput('placeholder', 'Mi placeholder');
         fixture.componentRef.setInput('showClear', true);
+        fixture.componentRef.setInput('showSelectAll', true);
+        fixture.componentRef.setInput('selectAllLabel', 'Marcar todo');
         fixture.componentRef.setInput('filter', true);
         fixture.componentRef.setInput('filterBy', 'label');
         fixture.componentRef.setInput('filterMode', 'strict');
@@ -445,6 +544,8 @@ describe('TreeselectComponent behavior', () => {
         expect(component.display()).toBe('chip');
         expect(component.placeholder()).toBe('Mi placeholder');
         expect(component.showClear()).toBeTrue();
+        expect(component.showSelectAll()).toBeTrue();
+        expect(component.selectAllLabel()).toBe('Marcar todo');
         expect(component.filter()).toBeTrue();
         expect(component.filterMode()).toBe('strict');
         expect(component.filterPlaceholder()).toBe('Busca aquí');

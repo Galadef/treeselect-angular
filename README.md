@@ -43,6 +43,53 @@ Para este flujo simplificado, las validaciones se ejecutan en local:
 
 Este flujo actúa como validación local completa (lint + tests unitarios + build + E2E automáticos).
 
+## Despliegue manual a GitHub Pages
+
+El despliegue quedó configurado para ejecutarse solo manualmente con GitHub Actions.
+
+Workflow:
+
+- `.github/workflows/deploy-pages.yml`
+
+### 1. Commitear y subir cambios
+
+```bash
+git add .
+git commit -m "feat: describe-tu-cambio"
+git push origin main
+```
+
+Nota: este repositorio usa commitlint convencional, por eso el mensaje debe seguir formato tipo `feat: ...`, `fix: ...`, `chore: ...`.
+
+### 2. Lanzar deploy manual con GitHub CLI
+
+Si es la primera vez, autentica `gh`:
+
+```bash
+gh auth login
+```
+
+Ejecuta el workflow manual:
+
+```bash
+gh workflow run deploy-pages.yml
+```
+
+Ver estado de la ejecución:
+
+```bash
+gh run list --workflow deploy-pages.yml
+gh run watch
+```
+
+### 3. URL esperada
+
+Al terminar, el sitio se publica en:
+
+- `https://galadef.github.io/treeselect-angular/`
+
+El workflow ya compila con base href correcto para Pages (`/treeselect-angular/`) y publica el artefacto desde `dist/treeselect-angular/browser`.
+
 ## Estado actual
 
 Implementado el primer esqueleto funcional de `app-treeselect` con:
